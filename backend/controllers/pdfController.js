@@ -1,5 +1,6 @@
 const PDF = require("../models/PDF");
 const crypto = require("crypto");
+const { sendShareEmail } = require("../utils/emailService");
 
 exports.uploadPDF = async (req, res) => {
   try {
@@ -44,7 +45,13 @@ exports.sharePDF = async (req, res) => {
     pdf.shareableLink = uniqueLink;
     await pdf.save();
 
-    res.json({ message: "PDF shared successfully", link: uniqueLink });
+    // Send email to each recipient
+    emails.forEach((email) => sendShareEmail(email, uniqueLink));
+
+    res.json({
+      message: "PDF shared successfully and email sent!",
+      link: uniqueLink,
+    });
   } catch (error) {
     res.status(500).json({ message: "Server Error", error });
   }

@@ -10,6 +10,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 app.use("/api/pdf", require("./routes/pdfRoutes"));
+app.use("/api/comments", require("./routes/commentRoutes"));
 
 app.use("/api/auth", require("./routes/authRoutes"));
 

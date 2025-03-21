@@ -2,7 +2,7 @@ const nodemailer = require("nodemailer");
 require("dotenv").config();
 
 const transporter = nodemailer.createTransport({
-  service: "Gmail", // or use SMTP settings
+  service: "Gmail",
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
@@ -18,9 +18,9 @@ exports.sendShareEmail = async (recipient, link) => {
   };
 
   try {
-    await transporter.sendMail(mailOptions);
-    console.log(`Email sent to ${recipient}`);
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`✅ Email sent: ${info.response}`);
   } catch (error) {
-    console.error("Error sending email:", error);
+    console.error("❌ Error sending email:", error);
   }
 };

@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { getSharedPDF, addComment, getComments } from "../api/api";
+import { getSharedPDF, getComments, addComment } from "../api/api";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 
+// ✅ Fix PDF.js worker issue (removes fake worker warning)
 pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 const ViewPDF = () => {
@@ -14,25 +15,27 @@ const ViewPDF = () => {
   const [newComment, setNewComment] = useState("");
   const [numPages, setNumPages] = useState(null);
 
-  // Extract the correct pdfId (first part before "-")
+  // ✅ Extract only the valid pdfId (before "-")
   const cleanPdfId = pdfId.split("-")[0];
 
   useEffect(() => {
     const fetchPDF = async () => {
       try {
+        console.log("🔹 Fetching PDF with ID:", cleanPdfId); // Debugging
         const res = await getSharedPDF(cleanPdfId);
         setPdf(res.data.pdf);
       } catch (error) {
-        console.error("Error fetching PDF:", error);
+        console.error("❌ Error fetching PDF:", error);
       }
     };
 
     const fetchComments = async () => {
       try {
+        console.log("🔹 Fetching Comments for ID:", cleanPdfId); // Debugging
         const res = await getComments(cleanPdfId);
         setComments(res.data);
       } catch (error) {
-        console.error("Error fetching comments:", error);
+        console.error("❌ Error fetching comments:", error);
       }
     };
 
@@ -49,7 +52,7 @@ const ViewPDF = () => {
       setComments([...comments, { text: newComment, createdAt: new Date() }]);
       setNewComment("");
     } catch (error) {
-      console.error("Error adding comment", error);
+      console.error("❌ Error adding comment:", error);
     }
   };
 

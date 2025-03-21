@@ -5,11 +5,8 @@ import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 
-// ✅ Import worker from `pdfjs-dist`
-import pdfWorker from "pdfjs-dist/build/pdf.worker.min.js";
-pdfjs.GlobalWorkerOptions.workerSrc = URL.createObjectURL(
-  new Blob([pdfWorker], { type: "application/javascript" }),
-);
+// ✅ Set PDF worker to use local file (Fix for Vercel & Local)
+pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
 const ViewPDF = () => {
   const { pdfId } = useParams();

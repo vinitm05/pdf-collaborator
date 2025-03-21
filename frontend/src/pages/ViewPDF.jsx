@@ -5,11 +5,8 @@ import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 
-// ✅ Load PDF.js worker from `pdfjs-dist/webpack`
-import pdfjsWorker from "pdfjs-dist/build/pdf.worker.mjs";
-pdfjs.GlobalWorkerOptions.workerSrc = URL.createObjectURL(
-  new Blob([pdfjsWorker], { type: "application/javascript" }),
-);
+// ✅ Use Local Worker (No CDN, No CORS Issues)
+pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
 const ViewPDF = () => {
   const { pdfId } = useParams();
@@ -42,7 +39,7 @@ const ViewPDF = () => {
 
   return (
     <div className="container mx-auto p-6">
-      <h2 className="mb-4 text-xl font-bold">PDF Viewer</h2>
+      <h2 className="text-xl font-bold mb-4">PDF Viewer</h2>
 
       {error && <p className="text-red-500">{error}</p>}
 

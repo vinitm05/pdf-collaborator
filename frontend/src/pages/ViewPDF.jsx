@@ -61,13 +61,19 @@ const ViewPDF = () => {
       const token = localStorage.getItem("token");
       const userEmail = localStorage.getItem("userEmail");
 
+      console.log("Current user email:", userEmail); // Debug log
+
       const commentData = {
         pdfId: cleanPdfId,
         text: newComment,
-        email: token ? userEmail : "anonymous@example.com",
+        email: userEmail,
       };
 
+      console.log("Sending comment data:", commentData); // Debug log
+
       const res = await addComment(commentData);
+      console.log("Comment response:", res.data); // Debug log
+
       setComments((prevComments) => [res.data.comment, ...prevComments]);
       setNewComment("");
     } catch (error) {

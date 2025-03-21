@@ -19,6 +19,7 @@ const ViewPDF = () => {
   const [isCommenting, setIsCommenting] = useState(false);
 
   const cleanPdfId = pdfId.split("-")[0];
+  const userEmail = localStorage.getItem("userEmail");
 
   useEffect(() => {
     const fetchPDF = async () => {
@@ -58,13 +59,15 @@ const ViewPDF = () => {
     setIsCommenting(true);
     try {
       const token = localStorage.getItem("token");
+      const userEmail = localStorage.getItem("userEmail");
+
       const commentData = {
         pdfId: cleanPdfId,
         text: newComment,
-        email: token ? undefined : "anonymous@example.com",
+        email: token ? userEmail : "anonymous@example.com",
       };
 
-      const res = await addComment(commentData, token);
+      const res = await addComment(commentData);
       setComments((prevComments) => [res.data.comment, ...prevComments]);
       setNewComment("");
     } catch (error) {
@@ -157,8 +160,12 @@ const ViewPDF = () => {
                 className="border-b p-3 last:border-0 hover:bg-gray-50"
               >
                 <div className="mb-1 flex items-center justify-between">
-                  <strong className="text-blue-600">
-                    {comment.user || "Anonymous"}
+                  <strong
+                    className={`${comment.user === userEmail ? "text-green-600" : "text-blue-600"}`}
+                  >
+                    {comment.user === userEmail
+                      ? "You"
+                      : comment.user || "Anonymous"}
                   </strong>
                   <span className="text-xs text-gray-500">
                     {formatDate(comment.createdAt)}

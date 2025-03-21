@@ -13,11 +13,15 @@ exports.uploadPDF = async (req, res) => {
     });
 
     await pdf.save();
+    console.log("✅ PDF Uploaded & Saved:", pdf); // Debugging log
+
     res.status(201).json({ message: "PDF uploaded successfully", pdf });
   } catch (error) {
+    console.error("❌ Error saving PDF:", error);
     res.status(500).json({ message: "Server Error", error });
   }
 };
+
 
 exports.getUserPDFs = async (req, res) => {
   try {

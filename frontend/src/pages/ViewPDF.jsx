@@ -5,9 +5,8 @@ import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 
-// ✅ Fix PDF.js Worker Loading
-import workerUrl from "pdfjs-dist/build/pdf.worker?url";
-pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
+// Update the worker configuration
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 const ViewPDF = () => {
   const { pdfId } = useParams();
@@ -25,12 +24,13 @@ const ViewPDF = () => {
         console.log("🔹 Fetching PDF with ID:", cleanPdfId);
         const res = await getSharedPDF(cleanPdfId);
         if (!res.data || !res.data.pdf) throw new Error("Invalid PDF data received");
+        if (!res.data.pdf.fileUrl) throw new Error("PDF URL is missing");
 
-        setPdfUrl(res.data.pdf.fileUrl);
         console.log("✅ PDF URL:", res.data.pdf.fileUrl);
+        setPdfUrl(res.data.pdf.fileUrl);
       } catch (error) {
         console.error("❌ Error fetching PDF:", error);
-        setError("Failed to load PDF.");
+        setError(error.message || "Failed to load PDF.");
       }
     };
 
@@ -65,14 +65,39 @@ const ViewPDF = () => {
     <div className="container mx-auto p-6 flex space-x-6">
       {/* PDF Viewer */}
       <div className="w-2/3 border p-4 bg-white shadow-md">
-        {pdfUrl ? (
-          <Document file={pdfUrl} onLoadSuccess={({ numPages }) => setNumPages(numPages)}>
-            {Array.from(new Array(numPages), (el, index) => (
-              <Page key={`page_${index + 1}`} pageNumber={index + 1} className="mb-4 shadow-sm" />
+        {error ? (
+          <div className="text-red-500 p-4">
+            <p>Error: {error}</p>
+            <p className="text-sm mt-2">Please check if the link is valid or try again later.</p>
+          </div>
+        ) : pdfUrl ? (
+          <Document 
+            file={pdfUrl} 
+            onLoadSuccess={({ numPages }) => {
+              console.log("PDF loaded successfully with", numPages, "pages");
+              setNumPages(numPages);
+            }}
+            onLoadError={(error) => {
+              console.error("Detailed PDF Load Error:", error);
+              setError(`Failed to load PDF: ${error.message}`);
+            }}
+            onSourceError={(error) => {
+              console.error("Source Error:", error);
+              setError(`Source Error: ${error.message}`);
+            }}
+            loading={<p>Loading PDF...</p>}
+          >
+            {numPages && Array.from(new Array(numPages), (el, index) => (
+              <Page 
+                key={`page_${index + 1}`} 
+                pageNumber={index + 1} 
+                className="mb-4 shadow-sm"
+                onLoadError={(error) => console.error(`Error loading page ${index + 1}:`, error)}
+              />
             ))}
           </Document>
         ) : (
-          <p className="text-red-500">Loading PDF...</p>
+          <p className="text-gray-500">Loading PDF...</p>
         )}
       </div>
 

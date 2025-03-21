@@ -1,13 +1,20 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getSharedPDF } from "../api/api";
-import { Viewer, Worker } from "@react-pdf-viewer/core";
-import "@react-pdf-viewer/core/lib/styles/index.css";
-import "@react-pdf-viewer/default-layout/lib/styles/index.css";
+import { Document, Page, pdfjs } from "react-pdf";
+import "react-pdf/dist/esm/Page/TextLayer.css";
+import "react-pdf/dist/esm/Page/AnnotationLayer.css";
+
+// ✅ Load PDF.js worker from `pdfjs-dist/webpack`
+import pdfjsWorker from "pdfjs-dist/build/pdf.worker.mjs";
+pdfjs.GlobalWorkerOptions.workerSrc = URL.createObjectURL(
+  new Blob([pdfjsWorker], { type: "application/javascript" }),
+);
 
 const ViewPDF = () => {
   const { pdfId } = useParams();
   const [pdfUrl, setPdfUrl] = useState(null);
+  const [numPages, setNumPages] = useState(null);
   const [error, setError] = useState(null);
 
   const cleanPdfId = pdfId.split("-")[0];
@@ -40,11 +47,14 @@ const ViewPDF = () => {
       {error && <p className="text-red-500">{error}</p>}
 
       {pdfUrl ? (
-        <Worker workerUrl="https://unpkg.com/pdfjs-dist@4.8.69/build/pdf.worker.min.js">
-          <div className="border p-4">
-            <Viewer fileUrl={pdfUrl} />
-          </div>
-        </Worker>
+        <Document
+          file={pdfUrl}
+          onLoadSuccess={({ numPages }) => setNumPages(numPages)}
+        >
+          {Array.from(new Array(numPages), (el, index) => (
+            <Page key={`page_${index + 1}`} pageNumber={index + 1} />
+          ))}
+        </Document>
       ) : (
         <p className="text-gray-600">Loading PDF...</p>
       )}

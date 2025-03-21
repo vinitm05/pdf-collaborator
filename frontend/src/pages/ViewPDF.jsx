@@ -90,103 +90,113 @@ const ViewPDF = () => {
   };
 
   return (
-    <div className="container mx-auto flex space-x-6 p-6">
-      {/* PDF Viewer */}
-      <div className="w-2/3 border bg-white p-4 shadow-md">
-        {error ? (
-          <div className="p-4 text-red-500">
-            <p>Error: {error}</p>
-            <p className="mt-2 text-sm">
-              Please check if the link is valid or try again later.
-            </p>
-          </div>
-        ) : pdfUrl ? (
-          <Document
-            file={pdfUrl}
-            onLoadSuccess={({ numPages }) => {
-              console.log("PDF loaded successfully with", numPages, "pages");
-              setNumPages(numPages);
-            }}
-            onLoadError={(error) => {
-              console.error("Detailed PDF Load Error:", error);
-              setError(`Failed to load PDF: ${error.message}`);
-            }}
-            onSourceError={(error) => {
-              console.error("Source Error:", error);
-              setError(`Source Error: ${error.message}`);
-            }}
-            loading={<p>Loading PDF...</p>}
-          >
-            {numPages &&
-              Array.from(new Array(numPages), (el, index) => (
-                <Page
-                  key={`page_${index + 1}`}
-                  pageNumber={index + 1}
-                  className="mb-4 shadow-sm"
-                  onLoadError={(error) =>
-                    console.error(`Error loading page ${index + 1}:`, error)
-                  }
-                />
-              ))}
-          </Document>
-        ) : (
-          <p className="text-gray-500">Loading PDF...</p>
-        )}
-      </div>
-
-      {/* Updated Comments Section */}
-      <div className="flex w-1/3 flex-col border bg-gray-100 p-4 shadow-md">
-        <h2 className="mb-4 text-lg font-semibold">
-          Comments ({comments.length})
-        </h2>
-
-        {/* Comment Input Form - Moved to top */}
-        <form onSubmit={handleCommentSubmit} className="mb-4">
-          <textarea
-            placeholder="Write a comment..."
-            className="min-h-[100px] w-full rounded-md border p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-          />
-          <button
-            type="submit"
-            className="mt-2 w-full rounded-md bg-blue-500 p-2 text-white transition-colors hover:bg-blue-600 disabled:bg-gray-400"
-            disabled={!newComment.trim() || isCommenting}
-          >
-            {isCommenting ? "Adding..." : "Add Comment"}
-          </button>
-        </form>
-
-        {/* Comments List */}
-        <div className="max-h-[60vh] flex-1 overflow-y-auto rounded-md border bg-white p-3 shadow-inner">
-          {comments.length > 0 ? (
-            comments.map((comment, index) => (
-              <div
-                key={comment._id || index}
-                className="border-b p-3 last:border-0 hover:bg-gray-50"
-              >
-                <div className="mb-1 flex items-center justify-between">
-                  <strong
-                    className={`${comment.user === userEmail ? "text-green-600" : "text-blue-600"}`}
-                  >
-                    {comment.user === userEmail
-                      ? "You"
-                      : comment.user || "Anonymous"}
-                  </strong>
-                  <span className="text-xs text-gray-500">
-                    {formatDate(comment.createdAt)}
-                  </span>
-                </div>
-                <p className="whitespace-pre-wrap text-gray-800">
-                  {comment.text}
+    <div className="container mx-auto p-6">
+      <div className="flex flex-col gap-6 lg:flex-row">
+        {/* PDF Viewer */}
+        <div className="lg:w-2/3">
+          <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+            {error ? (
+              <div className="rounded-lg bg-red-50 p-4 text-red-600">
+                <p className="font-medium">Error: {error}</p>
+                <p className="mt-2 text-sm">
+                  Please check if the link is valid or try again later.
                 </p>
               </div>
-            ))
-          ) : (
-            <p className="py-4 text-center text-gray-600">
-              No comments yet. Be the first to comment!
-            </p>
-          )}
+            ) : pdfUrl ? (
+              <Document
+                file={pdfUrl}
+                onLoadSuccess={({ numPages }) => {
+                  console.log(
+                    "PDF loaded successfully with",
+                    numPages,
+                    "pages",
+                  );
+                  setNumPages(numPages);
+                }}
+                onLoadError={(error) => {
+                  console.error("Detailed PDF Load Error:", error);
+                  setError(`Failed to load PDF: ${error.message}`);
+                }}
+                loading={
+                  <div className="flex h-64 items-center justify-center">
+                    <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-blue-500"></div>
+                  </div>
+                }
+              >
+                {numPages &&
+                  Array.from(new Array(numPages), (el, index) => (
+                    <Page
+                      key={`page_${index + 1}`}
+                      pageNumber={index + 1}
+                      className="mb-4 shadow-sm"
+                      renderTextLayer={false}
+                      renderAnnotationLayer={false}
+                    />
+                  ))}
+              </Document>
+            ) : (
+              <div className="flex h-64 items-center justify-center">
+                <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-blue-500"></div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Comments Section */}
+        <div className="lg:w-1/3">
+          <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+            <h2 className="mb-6 text-xl font-semibold text-gray-900">
+              Comments ({comments.length})
+            </h2>
+
+            {/* Comment Input */}
+            <form onSubmit={handleCommentSubmit} className="mb-6">
+              <textarea
+                placeholder="Write a comment..."
+                className="w-full resize-none rounded-lg border border-gray-200 px-4 py-3 focus:border-transparent focus:ring-2 focus:ring-blue-500"
+                rows="4"
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+              />
+              <button
+                type="submit"
+                disabled={!newComment.trim() || isCommenting}
+                className="mt-2 w-full rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 px-4 py-2 text-white transition-all hover:from-blue-600 hover:to-indigo-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isCommenting ? "Adding..." : "Add Comment"}
+              </button>
+            </form>
+
+            {/* Comments List */}
+            <div className="max-h-[600px] space-y-4 overflow-y-auto">
+              {comments.map((comment, index) => (
+                <div
+                  key={comment._id || index}
+                  className="rounded-lg bg-gray-50 p-4 transition-colors hover:bg-gray-100"
+                >
+                  <div className="mb-2 flex items-center justify-between">
+                    <span
+                      className={`font-medium ${
+                        comment.user === localStorage.getItem("userEmail")
+                          ? "text-blue-600"
+                          : "text-gray-900"
+                      }`}
+                    >
+                      {comment.user === localStorage.getItem("userEmail")
+                        ? "You"
+                        : comment.user}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {formatDate(comment.createdAt)}
+                    </span>
+                  </div>
+                  <p className="whitespace-pre-wrap text-gray-700">
+                    {comment.text}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>

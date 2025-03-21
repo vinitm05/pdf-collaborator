@@ -5,9 +5,8 @@ import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 
-// ✅ Correctly import the worker using a Webpack-compatible method
-import * as pdfjsWorker from "pdfjs-dist/build/pdf.worker.mjs";
-pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
+// ✅ Set PDF.js worker source correctly (Fix for Vercel)
+pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
 const ViewPDF = () => {
   const { pdfId } = useParams();

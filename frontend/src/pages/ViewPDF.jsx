@@ -5,8 +5,9 @@ import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 
-// Set worker source to local file
-pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
+// Import worker directly
+import pdfjsWorker from "pdfjs-dist/build/pdf.worker.min.js?url";
+pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 const ViewPDF = () => {
   const { pdfId } = useParams();

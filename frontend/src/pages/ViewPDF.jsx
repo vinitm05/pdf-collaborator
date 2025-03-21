@@ -5,9 +5,8 @@ import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 
-// Import worker as a URL using Vite's syntax
-import workerSrc from "pdfjs-dist/build/pdf.worker.min.js?url";
-pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
+// Set worker source with specific version
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 const ViewPDF = () => {
   const { pdfId } = useParams();

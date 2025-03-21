@@ -5,8 +5,8 @@ import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 
-// ✅ Set PDF.js worker source correctly (Fix for Vercel)
-pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
+// ✅ Correctly set workerSrc for Vite + Vercel
+pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 const ViewPDF = () => {
   const { pdfId } = useParams();

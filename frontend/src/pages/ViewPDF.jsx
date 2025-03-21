@@ -21,7 +21,7 @@ const ViewPDF = () => {
         const res = await getSharedPDF(cleanPdfId);
         setPdf(res.data.pdf);
       } catch (error) {
-        console.error("Error fetching PDF", error);
+        console.error("Error fetching PDF:", error);
       }
     };
 
@@ -30,7 +30,7 @@ const ViewPDF = () => {
         const res = await getComments(cleanPdfId);
         setComments(res.data);
       } catch (error) {
-        console.error("Error fetching comments", error);
+        console.error("Error fetching comments:", error);
       }
     };
 

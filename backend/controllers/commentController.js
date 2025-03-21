@@ -1,20 +1,25 @@
 const Comment = require("../models/Comment");
 
+const sanitizeText = (text) => {
+  return text.trim().slice(0, 1000); // Limit comment length
+};
+
 exports.addComment = async (req, res) => {
   try {
     const { pdfId, text, parentComment } = req.body;
 
-    if (!pdfId || !text) {
+    if (!pdfId || !text?.trim()) {
       return res.status(400).json({ message: "PDF ID and text are required" });
     }
 
-    const userIdentifier = req.user ? req.user.email : req.body.email; // Handle invited users
+    const sanitizedText = sanitizeText(text);
+    const userIdentifier = req.user?.email || req.body.email || "Anonymous";
 
     const comment = new Comment({
       pdf: pdfId,
       user: userIdentifier,
-      text,
-      parentComment: parentComment || null, // Ensure null if no parent
+      text: sanitizedText,
+      parentComment: parentComment || null,
     });
 
     await comment.save();
@@ -24,12 +29,10 @@ exports.addComment = async (req, res) => {
       "parentComment"
     );
 
-    res
-      .status(201)
-      .json({
-        message: "Comment added successfully",
-        comment: populatedComment,
-      });
+    res.status(201).json({
+      message: "Comment added successfully",
+      comment: populatedComment,
+    });
   } catch (error) {
     console.error("Error adding comment:", error);
     res.status(500).json({ message: "Server Error", error });

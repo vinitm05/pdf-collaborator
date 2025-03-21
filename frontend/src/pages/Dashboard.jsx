@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 const Dashboard = () => {
   const [pdfs, setPdfs] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
@@ -12,12 +13,14 @@ const Dashboard = () => {
     if (!token) return navigate("/");
 
     const fetchPDFs = async () => {
-      setIsLoading(true);
       try {
+        setIsLoading(true);
+        setError(null);
         const res = await getUserPDFs(token);
         setPdfs(res.data);
       } catch (error) {
-        console.error("Error fetching PDFs", error);
+        console.error("Error fetching PDFs:", error);
+        setError("Failed to load PDFs. Please try again.");
       } finally {
         setIsLoading(false);
       }
@@ -37,6 +40,14 @@ const Dashboard = () => {
       console.error("Error sharing PDF", error);
     }
   };
+
+  if (error) {
+    return <div className="p-4 text-red-500">{error}</div>;
+  }
+
+  if (isLoading) {
+    return <div className="p-4">Loading your PDFs...</div>;
+  }
 
   return (
     <div className="container mx-auto min-h-screen max-w-4xl px-4 py-8">
@@ -66,11 +77,7 @@ const Dashboard = () => {
         </button>
       </div>
 
-      {isLoading ? (
-        <div className="flex h-64 items-center justify-center">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-blue-200 border-t-blue-500"></div>
-        </div>
-      ) : pdfs.length === 0 ? (
+      {pdfs.length === 0 ? (
         <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-12 text-center">
           <svg
             className="mx-auto h-12 w-12 text-gray-400"

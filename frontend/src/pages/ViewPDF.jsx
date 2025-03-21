@@ -16,6 +16,7 @@ const ViewPDF = () => {
   const [error, setError] = useState(null);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
+  const [isCommenting, setIsCommenting] = useState(false);
 
   const cleanPdfId = pdfId.split("-")[0];
 
@@ -24,7 +25,8 @@ const ViewPDF = () => {
       try {
         console.log("🔹 Fetching PDF with ID:", cleanPdfId);
         const res = await getSharedPDF(cleanPdfId);
-        if (!res.data || !res.data.pdf) throw new Error("Invalid PDF data received");
+        if (!res.data || !res.data.pdf)
+          throw new Error("Invalid PDF data received");
         if (!res.data.pdf.fileUrl) throw new Error("PDF URL is missing");
 
         console.log("✅ PDF URL:", res.data.pdf.fileUrl);
@@ -53,27 +55,45 @@ const ViewPDF = () => {
     e.preventDefault();
     if (!newComment.trim()) return;
 
+    setIsCommenting(true);
     try {
-      const res = await addComment({ pdfId: cleanPdfId, text: newComment });
-      setComments([res.data.comment, ...comments]); // ✅ Update comments list instantly
+      const token = localStorage.getItem("token");
+      const commentData = {
+        pdfId: cleanPdfId,
+        text: newComment,
+        email: token ? undefined : "anonymous@example.com",
+      };
+
+      const res = await addComment(commentData, token);
+      setComments((prevComments) => [res.data.comment, ...prevComments]);
       setNewComment("");
     } catch (error) {
       console.error("❌ Error adding comment:", error);
+      alert("Failed to add comment. Please try again.");
+    } finally {
+      setIsCommenting(false);
     }
   };
 
+  // Add this to format the comment date
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleString();
+  };
+
   return (
-    <div className="container mx-auto p-6 flex space-x-6">
+    <div className="container mx-auto flex space-x-6 p-6">
       {/* PDF Viewer */}
-      <div className="w-2/3 border p-4 bg-white shadow-md">
+      <div className="w-2/3 border bg-white p-4 shadow-md">
         {error ? (
-          <div className="text-red-500 p-4">
+          <div className="p-4 text-red-500">
             <p>Error: {error}</p>
-            <p className="text-sm mt-2">Please check if the link is valid or try again later.</p>
+            <p className="mt-2 text-sm">
+              Please check if the link is valid or try again later.
+            </p>
           </div>
         ) : pdfUrl ? (
-          <Document 
-            file={pdfUrl} 
+          <Document
+            file={pdfUrl}
             onLoadSuccess={({ numPages }) => {
               console.log("PDF loaded successfully with", numPages, "pages");
               setNumPages(numPages);
@@ -88,49 +108,73 @@ const ViewPDF = () => {
             }}
             loading={<p>Loading PDF...</p>}
           >
-            {numPages && Array.from(new Array(numPages), (el, index) => (
-              <Page 
-                key={`page_${index + 1}`} 
-                pageNumber={index + 1} 
-                className="mb-4 shadow-sm"
-                onLoadError={(error) => console.error(`Error loading page ${index + 1}:`, error)}
-              />
-            ))}
+            {numPages &&
+              Array.from(new Array(numPages), (el, index) => (
+                <Page
+                  key={`page_${index + 1}`}
+                  pageNumber={index + 1}
+                  className="mb-4 shadow-sm"
+                  onLoadError={(error) =>
+                    console.error(`Error loading page ${index + 1}:`, error)
+                  }
+                />
+              ))}
           </Document>
         ) : (
           <p className="text-gray-500">Loading PDF...</p>
         )}
       </div>
 
-      {/* Comments Section */}
-      <div className="w-1/3 p-4 bg-gray-100 border shadow-md flex flex-col">
-        <h2 className="text-lg font-semibold mb-4">Comments</h2>
-        <div className="flex-1 overflow-y-auto max-h-[60vh] border bg-white p-3 rounded-md shadow-inner">
-          {comments.length > 0 ? (
-            comments.map((comment, index) => (
-              <div key={index} className="p-2 border-b">
-                <strong className="text-blue-600">{comment.user || "Anonymous"}:</strong>
-                <p className="text-gray-800">{comment.text}</p>
-              </div>
-            ))
-          ) : (
-            <p className="text-gray-600">No comments yet.</p>
-          )}
-        </div>
+      {/* Updated Comments Section */}
+      <div className="flex w-1/3 flex-col border bg-gray-100 p-4 shadow-md">
+        <h2 className="mb-4 text-lg font-semibold">
+          Comments ({comments.length})
+        </h2>
 
-        {/* Comment Input */}
-        <form onSubmit={handleCommentSubmit} className="mt-4">
-          <input
-            type="text"
+        {/* Comment Input Form - Moved to top */}
+        <form onSubmit={handleCommentSubmit} className="mb-4">
+          <textarea
             placeholder="Write a comment..."
-            className="p-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="min-h-[100px] w-full rounded-md border p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
           />
-          <button type="submit" className="mt-2 p-2 bg-blue-500 text-white w-full rounded-md">
-            Add Comment
+          <button
+            type="submit"
+            className="mt-2 w-full rounded-md bg-blue-500 p-2 text-white transition-colors hover:bg-blue-600 disabled:bg-gray-400"
+            disabled={!newComment.trim() || isCommenting}
+          >
+            {isCommenting ? "Adding..." : "Add Comment"}
           </button>
         </form>
+
+        {/* Comments List */}
+        <div className="max-h-[60vh] flex-1 overflow-y-auto rounded-md border bg-white p-3 shadow-inner">
+          {comments.length > 0 ? (
+            comments.map((comment, index) => (
+              <div
+                key={comment._id || index}
+                className="border-b p-3 last:border-0 hover:bg-gray-50"
+              >
+                <div className="mb-1 flex items-center justify-between">
+                  <strong className="text-blue-600">
+                    {comment.user || "Anonymous"}
+                  </strong>
+                  <span className="text-xs text-gray-500">
+                    {formatDate(comment.createdAt)}
+                  </span>
+                </div>
+                <p className="whitespace-pre-wrap text-gray-800">
+                  {comment.text}
+                </p>
+              </div>
+            ))
+          ) : (
+            <p className="py-4 text-center text-gray-600">
+              No comments yet. Be the first to comment!
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -2,6 +2,8 @@ import { useState } from "react";
 import { uploadPDF } from "../api/api";
 import { useNavigate } from "react-router-dom";
 
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
 const Upload = () => {
   const [file, setFile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -58,9 +60,21 @@ const Upload = () => {
     }
   };
 
+  const validateFile = (file) => {
+    if (!file) return "Please select a PDF file";
+    if (file.type !== "application/pdf") return "Only PDF files are allowed";
+    if (file.size > MAX_FILE_SIZE) return "File size must be less than 10MB";
+    return null;
+  };
+
   const handleFileChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
+    const file = e.target.files?.[0];
+    const errorMessage = validateFile(file);
+    if (errorMessage) {
+      setError(errorMessage);
+      setFile(null);
+    } else {
+      setFile(file);
       setError("");
     }
   };

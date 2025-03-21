@@ -5,8 +5,8 @@ import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 
-// ✅ Dynamically set PDF.js worker path (Fix for Vercel)
-pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
+// ✅ Load PDF.js worker from local /public directory
+pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
 const ViewPDF = () => {
   const { pdfId } = useParams();

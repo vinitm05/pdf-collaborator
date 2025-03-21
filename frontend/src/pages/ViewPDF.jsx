@@ -5,8 +5,9 @@ import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 
-// ✅ Fix PDF.js worker issue (removes fake worker warning)
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+// ✅ Load PDF.js worker locally instead of a CDN
+import workerSrc from "pdfjs-dist/build/pdf.worker.min.js";
+pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
 
 const ViewPDF = () => {
   const { pdfId } = useParams();

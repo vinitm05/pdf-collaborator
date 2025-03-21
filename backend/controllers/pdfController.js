@@ -60,14 +60,18 @@ exports.sharePDF = async (req, res) => {
 exports.getSharedPDF = async (req, res) => {
   try {
     const { link } = req.params;
-    const pdf = await PDF.findOne({
-      shareableLink: `${process.env.CLIENT_URL}/view/${link}`,
-    });
+
+    // Extract pdfId (ignore extra hash)
+    const cleanPdfId = link.split("-")[0];
+
+    const pdf = await PDF.findById(cleanPdfId);
 
     if (!pdf) return res.status(404).json({ message: "PDF not found" });
 
     res.json({ pdf });
   } catch (error) {
+    console.error("Error fetching shared PDF:", error);
     res.status(500).json({ message: "Server Error", error });
   }
 };
+

@@ -61,20 +61,27 @@ exports.getSharedPDF = async (req, res) => {
   try {
     const { link } = req.params;
 
-    // Extract only the pdfId before "-"
+    console.log("Requested link:", link); // Debugging
+
+    // Extract only the first part before "-"
     const cleanPdfId = link.split("-")[0];
+
+    console.log("Extracted PDF ID:", cleanPdfId); // Debugging
 
     const pdf = await PDF.findById(cleanPdfId);
 
     if (!pdf) {
+      console.log("PDF Not Found in Database");
       return res.status(404).json({ message: "PDF not found" });
     }
 
+    console.log("PDF Found:", pdf); // Debugging
     res.json({ pdf });
   } catch (error) {
     console.error("Error fetching shared PDF:", error);
     res.status(500).json({ message: "Server Error", error: error.toString() });
   }
 };
+
 
 
